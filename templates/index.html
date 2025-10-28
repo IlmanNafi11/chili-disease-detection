@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Deteksi Penyakit Tanaman Cabai</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem Deteksi Penyakit Pada Tanaman Cabai</h1>
+            <p class="subtext">
+                Menerapkan Algoritma Machine Learning untuk deteksi penyakit tanaman cabai, 
+                dan penerapan Internet of Things (IoT) untuk monitoring kelembapan tanah.
+            </p>
+        </header>
+
+        <section class="content">
+            <div class="info">
+                <p class="label">Status Bibit</p>
+                <h2 id="status">{{ data.status_bibit }}</h2>
+                <p class="label">Status Kelembapan</p>
+                <h2 id="kelembapan">{{ data.kelembapan }}</h2>
+                <p class="label">Waktu</p>
+                <p>{{ data.tanggal }}</p>
+            </div>
+
+            <div class="image">
+                <img src="static/PlaceholderImage.png" alt="Tanaman Cabai">
+            </div>
+        </section>
+    </div>
+
+    <!-- <script src="/static/script.js"></script> -->
+</body>
+</html>
