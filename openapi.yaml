@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: API Klasifikasi Cabai
+  version: 1.0.0
+  description: >
+    API untuk menerima gambar dari ESP32-CAM dan menyimpan hasil klasifikasi cabai ke database MySQL.
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Cek status API
+      responses:
+        '200':
+          description: API aktif
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ✅ API Klasifikasi Cabai Aktif!
+
+  /upload:  # METHOD POST
+    post:
+      summary: Upload gambar hasil klasifikasi cabai
+      description: Endpoint untuk menerima gambar dari ESP32-CAM dan menyimpan hasil klasifikasi ke database.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                hasil:
+                  type: integer
+                  description: 1 untuk sehat, 0 untuk sakit
+                  example: 1
+      responses:
+        '200':
+          description: Data berhasil disimpan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data berhasil disimpan
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      path:
+                        type: string
+                        example: uploads/gambar1.jpg
+                      hasil:
+                        type: string
+                        example: Sehat
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2025-10-30 12:34:56
+
+  /klasifikasi:
+    get:
+      summary: Ambil semua data klasifikasi
+      description: Mengambil semua data hasil klasifikasi cabai yang tersimpan di database.
+      responses:
+        '200':
+          description: Daftar data klasifikasi cabai
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        path:
+                          type: string
+                          example: uploads/cabai1.jpg
+                        hasil:
+                          type: string
+                          example: Sehat
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: 2025-10-30 12:00:00
