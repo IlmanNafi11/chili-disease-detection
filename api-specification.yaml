@@ -141,6 +141,7 @@ paths:
       description: |
         Endpoint untuk menerima data kelembapan tanah yang dibaca dari sensor IoT.
         Hanya menerima nilai numerik kelembapan dalam persentase (0-100%).
+        Data langsung diproses dan dikirim ke frontend tanpa disimpan di database.
       operationId: submitHumidityData
       requestBody:
         required: true
@@ -150,18 +151,17 @@ paths:
               $ref: '#/components/schemas/HumidityDataRequest'
       responses:
         '200':
-          description: Data kelembapan berhasil diterima
+          description: Data kelembapan berhasil diproses
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HumidityResponse'
               examples:
                 success:
-                  summary: Data berhasil disimpan
+                  summary: Data berhasil diproses
                   value:
                     success: true
-                    message: "Data kelembapan berhasil diterima"
-                    sensor_id: "sensor_001"
+                    message: "Kelembapan dalam kondisi optimal"
                     humidity_value: 65
                     timestamp: "2025-11-02T07:13:30.180Z"
         '400':
@@ -184,7 +184,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Kesalahan server saat menyimpan data
+          description: Kesalahan server saat memproses data
           content:
             application/json:
               schema:
@@ -234,7 +234,7 @@ paths:
                       - id: "img_20251102071330_001"
                         hasil: 0
                         gambar_url: "/static/uploads/img_20251102071330_001.jpg"
-                        confidence: 0.95
+                        
                         timestamp: "2025-11-02T07:13:30.180Z"
                     total_count: 1
                 multiple_results:
@@ -245,12 +245,12 @@ paths:
                       - id: "img_20251102071330_001"
                         hasil: 0
                         gambar_url: "/static/uploads/img_20251102071330_001.jpg"
-                        confidence: 0.95
+                        
                         timestamp: "2025-11-02T07:13:30.180Z"
                       - id: "img_20251102071330_002"
                         hasil: 1
                         gambar_url: "/static/uploads/img_20251102071330_002.jpg"
-                        confidence: 0.87
+                        
                         timestamp: "2025-11-02T07:13:30.180Z"
                     total_count: 2
         '400':
@@ -355,10 +355,6 @@ components:
     HumidityDataRequest:
       type: object
       properties:
-        sensor_id:
-          type: string
-          description: ID unik sensor yang mengirim data
-          example: "sensor_001"
         kelembapan:
           type: number
           minimum: 0
@@ -366,10 +362,8 @@ components:
           description: Nilai kelembapan tanah dalam persentase (0-100)
           example: 65.5
       required:
-        - sensor_id
         - kelembapan
       example:
-        sensor_id: "sensor_001"
         kelembapan: 65
 
     HumidityResponse:
@@ -377,32 +371,29 @@ components:
       properties:
         success:
           type: boolean
-          description: Status operasi penyimpanan data
+          description: Status operasi pemrosesan data
         message:
           type: string
-          description: Pesan hasil penyimpanan
-        sensor_id:
-          type: string
-          description: ID sensor yang mengirim data
+          description: Pesan hasil pemrosesan
         humidity_value:
           type: number
-          description: Nilai kelembapan yang disimpan
+          description: Nilai kelembapan yang diproses
         timestamp:
           type: string
           format: date-time
-          description: Waktu data diterima
+          description: Waktu data diproses
       required:
         - success
         - message
-        - sensor_id
         - humidity_value
         - timestamp
       example:
         success: true
-        message: "Data kelembapan berhasil diterima"
-        sensor_id: "sensor_001"
+        message: "Kelembapan dalam kondisi optimal"
         humidity_value: 65
         timestamp: "2025-11-02T07:13:30.180Z"
+
+    
 
     ClassificationResult:
       type: object
@@ -420,12 +411,7 @@ components:
           type: string
           description: URL atau path gambar yang dianalisis
           example: "/static/uploads/img_20251102071330_001.jpg"
-        confidence:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Tingkat kepercayaan model terhadap hasil klasifikasi
-          example: 0.95
+        
         timestamp:
           type: string
           format: date-time
@@ -439,7 +425,7 @@ components:
         id: "img_20251102071330_001"
         hasil: 0
         gambar_url: "/static/uploads/img_20251102071330_001.jpg"
-        confidence: 0.95
+        
         timestamp: "2025-11-02T07:13:30.180Z"
 
     ClassificationResultsResponse:
@@ -471,7 +457,7 @@ components:
           - id: "img_20251102071330_001"
             hasil: 0
             gambar_url: "/static/uploads/img_20251102071330_001.jpg"
-            confidence: 0.95
+            
             timestamp: "2025-11-02T07:13:30.180Z"
         total_count: 1
         timestamp: "2025-11-02T07:13:30.180Z"
