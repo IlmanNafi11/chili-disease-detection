@@ -1,0 +1,514 @@
+openapi: 3.0.3
+info:
+  title: API Sistem Deteksi Penyakit Tanaman Cabai
+  description: |
+    API untuk sistem deteksi penyakit tanaman cabai menggunakan machine learning dan monitoring kelembapan tanah dengan IoT.
+    API ini menyediakan layanan untuk:
+    - Health check sistem
+    - Upload gambar tanaman untuk klasifikasi
+    - Input data kelembapan dari sensor
+    - Mengambil hasil klasifikasi
+  version: 1.0.0
+  contact:
+    name: Tim Pengembangan
+    email: developer@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Server Development
+  - url: https://api.chili-detection.com
+    description: Server Production
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Periksa kesehatan sistem
+      description: |
+        Endpoint untuk memverifikasi bahwa sistem sedang berjalan dan dapat menangani request.
+        Mengembalikan status kesehatan sistem dan informasi dasar.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Sistem sehat dan siap menerima request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                success:
+                  summary: Status sehat
+                  value:
+                    status: "sehat"
+                    message: "Sistem berjalan normal"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+                    version: "1.0.0"
+        '503':
+          description: Sistem tidak sehat atau sedang maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                maintenance:
+                  summary: Sistem maintenance
+                  value:
+                    error: "SERVICE_UNAVAILABLE"
+                    message: "Sistem sedang dalam perbaikan"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+
+  /upload-gambar:
+    post:
+      tags:
+        - Image Processing
+      summary: Upload gambar tanaman untuk klasifikasi
+      description: |
+        Endpoint untuk mengunggah gambar tanaman cabai yang akan dianalisis untuk mendeteksi penyakit.
+        Hanya menerima file gambar (JPG, PNG, WEBP) dengan ukuran maksimum 10MB.
+        Tidak memerlukan data tambahan lainnya.
+      operationId: uploadImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUploadRequest'
+      responses:
+        '200':
+          description: Gambar berhasil diunggah dan sedang diproses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+              examples:
+                success:
+                  summary: Upload berhasil
+                  value:
+                    success: true
+                    message: "Gambar berhasil diunggah dan sedang diproses"
+                    id: "img_20251102071330_001"
+                    upload_time: "2025-11-02T07:13:30.180Z"
+        '400':
+          description: Format file tidak valid atau gambar rusak
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_format:
+                  summary: Format file tidak valid
+                  value:
+                    error: "INVALID_FILE_FORMAT"
+                    message: "Hanya file JPG, PNG, dan WEBP yang diperbolehkan"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+                file_too_large:
+                  summary: File terlalu besar
+                  value:
+                    error: "FILE_TOO_LARGE"
+                    message: "Ukuran file maksimal 10MB"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+        '413':
+          description: Payload terlalu besar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Terlalu banyak request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Kesalahan server saat memproses gambar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /data-kelembapan:
+    post:
+      tags:
+        - Sensor Data
+      summary: Mengirim data kelembapan dari sensor
+      description: |
+        Endpoint untuk menerima data kelembapan tanah yang dibaca dari sensor IoT.
+        Hanya menerima nilai numerik kelembapan dalam persentase (0-100%).
+      operationId: submitHumidityData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HumidityDataRequest'
+      responses:
+        '200':
+          description: Data kelembapan berhasil diterima
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumidityResponse'
+              examples:
+                success:
+                  summary: Data berhasil disimpan
+                  value:
+                    success: true
+                    message: "Data kelembapan berhasil diterima"
+                    sensor_id: "sensor_001"
+                    humidity_value: 65
+                    timestamp: "2025-11-02T07:13:30.180Z"
+        '400':
+          description: Nilai kelembapan tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_humidity:
+                  summary: Nilai kelembapan invalid
+                  value:
+                    error: "INVALID_HUMIDITY_VALUE"
+                    message: "Nilai kelembapan harus berupa angka antara 0-100"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+        '422':
+          description: Format request tidak sesuai schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Kesalahan server saat menyimpan data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hasil-klasifikasi:
+    get:
+      tags:
+        - Classification Results
+      summary: Mengambil data hasil klasifikasi
+      description: |
+        Endpoint untuk mengambil hasil klasifikasi penyakit tanaman cabai.
+        Mengembalikan status kesehatan (0 = sehat, 1 = sakit) dan path/URL gambar yang dianalisis.
+        Dapat difilter berdasarkan id atau mengambil hasil terbaru.
+      operationId: getClassificationResults
+      parameters:
+        - name: id
+          in: query
+          description: ID spesifik dari gambar yang ingin diketahui hasilnya
+          required: false
+          schema:
+            type: string
+            example: "img_20251102071330_001"
+        - name: limit
+          in: query
+          description: Jumlah maksimal hasil yang dikembalikan
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+            example: 10
+      responses:
+        '200':
+          description: Berhasil mengambil data hasil klasifikasi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationResultsResponse'
+              examples:
+                single_result:
+                  summary: Hasil klasifikasi tunggal
+                  value:
+                    success: true
+                    results:
+                      - id: "img_20251102071330_001"
+                        hasil: 0
+                        gambar_url: "/static/uploads/img_20251102071330_001.jpg"
+                        confidence: 0.95
+                        timestamp: "2025-11-02T07:13:30.180Z"
+                    total_count: 1
+                multiple_results:
+                  summary: Multiple hasil klasifikasi
+                  value:
+                    success: true
+                    results:
+                      - id: "img_20251102071330_001"
+                        hasil: 0
+                        gambar_url: "/static/uploads/img_20251102071330_001.jpg"
+                        confidence: 0.95
+                        timestamp: "2025-11-02T07:13:30.180Z"
+                      - id: "img_20251102071330_002"
+                        hasil: 1
+                        gambar_url: "/static/uploads/img_20251102071330_002.jpg"
+                        confidence: 0.87
+                        timestamp: "2025-11-02T07:13:30.180Z"
+                    total_count: 2
+        '400':
+          description: Parameter query tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Data klasifikasi tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Data tidak ditemukan
+                  value:
+                    error: "CLASSIFICATION_NOT_FOUND"
+                    message: "Hasil klasifikasi untuk id tersebut tidak ditemukan"
+                    timestamp: "2025-11-02T07:13:30.180Z"
+        '500':
+          description: Kesalahan server saat mengambil data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [sehat, tidak_sehat, maintenance]
+          description: Status kesehatan sistem
+        message:
+          type: string
+          description: Pesan status sistem
+        timestamp:
+          type: string
+          format: date-time
+          description: Waktu pemeriksaan kesehatan
+        version:
+          type: string
+          description: Versi aplikasi
+      required:
+        - status
+        - message
+        - timestamp
+        - version
+      example:
+        status: "sehat"
+        message: "Sistem berjalan normal"
+        timestamp: "2025-11-02T07:13:30.180Z"
+        version: "1.0.0"
+
+    ImageUploadRequest:
+      type: object
+      properties:
+        image:
+          type: string
+          format: binary
+          description: File gambar tanaman Cabai (JPG, PNG, WEBP, maksimal 10MB)
+      required:
+        - image
+
+    UploadResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Status operasi upload
+        message:
+          type: string
+          description: Pesan hasil upload
+        id:
+          type: string
+          description: ID unik untuk gambar yang diunggah
+        upload_time:
+          type: string
+          format: date-time
+          description: Waktu upload gambar
+      required:
+        - success
+        - message
+        - id
+        - upload_time
+      example:
+        success: true
+        message: "Gambar berhasil diunggah dan sedang diproses"
+        id: "img_20251102071330_001"
+        upload_time: "2025-11-02T07:13:30.180Z"
+
+    HumidityDataRequest:
+      type: object
+      properties:
+        sensor_id:
+          type: string
+          description: ID unik sensor yang mengirim data
+          example: "sensor_001"
+        kelembapan:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Nilai kelembapan tanah dalam persentase (0-100)
+          example: 65.5
+      required:
+        - sensor_id
+        - kelembapan
+      example:
+        sensor_id: "sensor_001"
+        kelembapan: 65
+
+    HumidityResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Status operasi penyimpanan data
+        message:
+          type: string
+          description: Pesan hasil penyimpanan
+        sensor_id:
+          type: string
+          description: ID sensor yang mengirim data
+        humidity_value:
+          type: number
+          description: Nilai kelembapan yang disimpan
+        timestamp:
+          type: string
+          format: date-time
+          description: Waktu data diterima
+      required:
+        - success
+        - message
+        - sensor_id
+        - humidity_value
+        - timestamp
+      example:
+        success: true
+        message: "Data kelembapan berhasil diterima"
+        sensor_id: "sensor_001"
+        humidity_value: 65
+        timestamp: "2025-11-02T07:13:30.180Z"
+
+    ClassificationResult:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unik gambar yang diklasifikasi
+          example: "img_20251102071330_001"
+        hasil:
+          type: integer
+          enum: [0, 1]
+          description: Hasil klasifikasi (0 = sehat, 1 = sakit)
+          example: 0
+        gambar_url:
+          type: string
+          description: URL atau path gambar yang dianalisis
+          example: "/static/uploads/img_20251102071330_001.jpg"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Tingkat kepercayaan model terhadap hasil klasifikasi
+          example: 0.95
+        timestamp:
+          type: string
+          format: date-time
+          description: Waktu klasifikasi dilakukan
+      required:
+        - id
+        - hasil
+        - gambar_url
+        - timestamp
+      example:
+        id: "img_20251102071330_001"
+        hasil: 0
+        gambar_url: "/static/uploads/img_20251102071330_001.jpg"
+        confidence: 0.95
+        timestamp: "2025-11-02T07:13:30.180Z"
+
+    ClassificationResultsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Status operasi pengambilan data
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassificationResult'
+          description: Array hasil klasifikasi
+        total_count:
+          type: integer
+          description: Jumlah total hasil yang ditemukan
+        timestamp:
+          type: string
+          format: date-time
+          description: Waktu request diproses
+      required:
+        - success
+        - results
+        - total_count
+        - timestamp
+      example:
+        success: true
+        results:
+          - id: "img_20251102071330_001"
+            hasil: 0
+            gambar_url: "/static/uploads/img_20251102071330_001.jpg"
+            confidence: 0.95
+            timestamp: "2025-11-02T07:13:30.180Z"
+        total_count: 1
+        timestamp: "2025-11-02T07:13:30.180Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Kode error
+          example: "INVALID_FILE_FORMAT"
+        message:
+          type: string
+          description: Pesan error dalam bahasa Indonesia
+          example: "Hanya file JPG, PNG, dan WEBP yang diperbolehkan"
+        timestamp:
+          type: string
+          format: date-time
+          description: Waktu error terjadi
+        details:
+          type: object
+          description: Detail tambahan error (opsional)
+      required:
+        - error
+        - message
+        - timestamp
+      example:
+        error: "INVALID_FILE_FORMAT"
+        message: "Hanya file JPG, PNG, dan WEBP yang diperbolehkan"
+        timestamp: "2025-11-02T07:13:30.180Z"
+
+tags:
+  - name: System
+    description: Endpoint untuk monitoring dan kesehatan sistem
+  - name: Image Processing
+    description: Endpoint untuk обработки gambar dan klasifikasi
+  - name: Sensor Data
+    description: Endpoint untuk data dari sensor IoT
+  - name: Classification Results
+    description: Endpoint untuk mengambil hasil klasifikasi
