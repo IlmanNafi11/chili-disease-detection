@@ -9,15 +9,15 @@ from datetime import datetime
 import mimetypes
 import shutil
 
-from database import get_db
-from models import Classification
-from classification_schemas import (
+from ...database import get_db
+from ...models.models import Classification
+from ...schemas.classification_schemas import (
     HealthResponse, UploadResponse, HumidityDataRequest, HumidityResponse,
     ClassificationResultsResponse, ClassificationResult, ErrorResponse
 )
-from classification_service import create_classification_service
-from humidity_service import create_humidity_service
-from database import settings
+from ...services.classification_service import create_classification_service
+from ...services.humidity_service import create_humidity_service
+from ...database import settings
 
 logger = logging.getLogger(__name__)
 

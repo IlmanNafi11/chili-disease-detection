@@ -1,8 +1,8 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
-from models import Classification
-from db_session import create_database_session
+from ..models.models import Classification
+from ..db_session import create_database_session
 import logging
 
 logger = logging.getLogger(__name__)
