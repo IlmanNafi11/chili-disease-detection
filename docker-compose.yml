@@ -35,7 +35,7 @@ services:
       MAX_FILE_SIZE: 10485760
       UPLOAD_DIR: static/uploads
       RESULT_DIR: static/result
-      MODEL_DIR: models
+      MODEL_DIR: maching-learning
       LOG_LEVEL: INFO
       TIMEZONE: Asia/Jakarta
       CLASSIFICATION_POLLING_HOURS: 15
@@ -46,7 +46,7 @@ services:
       - "8000:8000"
     volumes:
       - ./static:/app/static
-      - ./models:/app/models
+      - ./maching-learning:/app/models
     depends_on:
       mysql:
         condition: service_healthy
