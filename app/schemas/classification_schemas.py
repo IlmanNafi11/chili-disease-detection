@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List
+from typing import List
 from datetime import datetime
 
 
@@ -14,13 +14,13 @@ class HealthResponse(BaseModel):
             datetime: lambda v: v.isoformat()
         }
 
-class ImageUploadRequest(BaseModel):
-    image: bytes = Field(...)
-
 class UploadResponse(BaseModel):
     success: bool = Field(...)
     message: str = Field(...)
     id: str = Field(...)
+    hasil: int = Field(..., ge=0, le=1)
+    confidence: float = Field(..., ge=0, le=1)
+    gambar_url: str = Field(...)
     upload_time: datetime = Field(...)
 
     class Config:
@@ -39,8 +39,7 @@ class HumidityDataRequest(BaseModel):
 
 class HumidityResponse(BaseModel):
     success: bool = Field(...)
-    message: str = Field(...)
-    humidity_value: float = Field(...)
+    kelembapan: float = Field(...)
     timestamp: datetime = Field(...)
 
     class Config:
@@ -70,48 +69,10 @@ class ClassificationResultsResponse(BaseModel):
             datetime: lambda v: v.isoformat()
         }
 
-class ErrorResponse(BaseModel):
-    error: str = Field(...)
-    message: str = Field(...)
-    timestamp: datetime = Field(...)
-    details: Optional[dict] = Field(None)
-
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-
-
-class ClassificationCreate(BaseModel):
-    id: str = Field(..., max_length=255)
-    hasil: int = Field(..., ge=0, le=1)
-    path: str = Field(..., max_length=500)
-    confidence: float = Field(..., ge=0, le=1)
-
-class ClassificationUpdate(BaseModel):
-    hasil: Optional[int] = Field(None, ge=0, le=1)
-    path: Optional[str] = Field(None, max_length=500)
-    confidence: Optional[float] = Field(None, ge=0, le=1)
-
-class ClassificationResponse(BaseModel):
-    id: str
-    hasil: int
-    path: str
-    confidence: float
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-
-class ClassificationListResponse(BaseModel):
-    results: List[ClassificationResponse]
-    total_count: int
-    timestamp: datetime
-
+class ConfigResponse(BaseModel):
+    classification_polling_hours: int = Field(...)
+    classification_polling_minutes: int = Field(...)
+    
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()

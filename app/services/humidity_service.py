@@ -1,71 +1,60 @@
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
 class HumidityService:
+    _current_humidity: Optional[float] = None
+    _last_update: Optional[datetime] = None
+    _instance = None
+    _initialized: bool = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(HumidityService, cls).__new__(cls)
+        return cls._instance
     
     def __init__(self):
-        pass
+        if not HumidityService._initialized:
+            logger.info("HumidityService diinisialisasi")
+            HumidityService._initialized = True
     
-    def process_humidity_data(self, kelembapan: float) -> Dict[str, Any]:
-        try:
-            logger.info(f"Processing humidity data: {kelembapan}%")
-            
-            result = {
-                "kelembapan": kelembapan,
-                "timestamp": datetime.utcnow(),
-                "status": "processed",
-                "message": "Data kelembapan berhasil diproses"
-            }
-            
-            return result
-        except Exception as e:
-            logger.error(f"Error processing humidity data: {e}")
-            raise
+    def update_humidity(self, kelembapan: float) -> None:
+        HumidityService._current_humidity = kelembapan
+        HumidityService._last_update = datetime.utcnow()
+        logger.info(f"Kelembapan diupdate: {kelembapan}%")
     
-    def get_latest_humidity_info(self, kelembapan: float) -> Dict[str, Any]:
-        try:
-            from datetime import datetime
-            
+    def get_current_humidity(self) -> Optional[float]:
+        return HumidityService._current_humidity
+    
+    def get_last_update(self) -> Optional[datetime]:
+        return HumidityService._last_update
+    
+    def get_humidity_status(self) -> Dict[str, Any]:
+        current_humidity = self.get_current_humidity()
+        last_update = self.get_last_update()
+        
+        if current_humidity is None:
             return {
-                "kelembapan_terbaru": kelembapan,
-                "timestamp": datetime.utcnow(),
-                "status": "aktif",
-                "keterangan": "Data terbaru dari sensor"
+                "status": "Tidak Tersedia",
+                "value": None,
+                "last_update": last_update,
+                "message": "Data kelembapan tidak tersedia"
             }
-        except Exception as e:
-            logger.error(f"Error getting latest humidity info: {e}")
-            raise
-    
-    def analyze_humidity(self, kelembapan: float) -> Dict[str, Any]:
-        try:
-            status = "optimal"
-            message = "Kelembapan dalam kondisi optimal"
-            
-            if kelembapan < 30:
-                status = "kering"
-                message = "Kelembapan terlalu kering, perlu penyiraman"
-            elif kelembapan > 80:
-                status = "basah"
-                message = "Kelembapan terlalu basah, perlu drainage"
-            elif kelembapan < 40:
-                status = "kurang"
-                message = "Kelembapan kurang, perlu perhatian"
-            elif kelembapan > 70:
-                status = "berlebih"
-                message = "Kelembapan berlebih, perlu pengurangan air"
-            
-            return {
-                "kelembapan": kelembapan,
-                "status": status,
-                "message": message,
-                "timestamp": datetime.utcnow()
-            }
-        except Exception as e:
-            logger.error(f"Error analyzing humidity: {e}")
-            raise
+        
+        status_text = "Optimal" if 40 <= current_humidity <= 70 else "Tidak Optimal"
+        return {
+            "status": status_text,
+            "value": current_humidity,
+            "last_update": last_update,
+            "message": f"Kelembapan {status_text.lower()}: {current_humidity}%"
+        }
+
+_instance = None
 
 def create_humidity_service() -> HumidityService:
-    return HumidityService()
+    global _instance
+    if _instance is None:
+        _instance = HumidityService()
+    return _instance

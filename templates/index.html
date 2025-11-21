@@ -19,19 +19,33 @@
         <section class="content">
             <div class="info">
                 <p class="label">Status Bibit</p>
-                <h2 id="status">{{ data.status_bibit }}</h2>
+                <h2 id="status">Tidak Tersedia</h2>
                 <p class="label">Status Kelembapan</p>
-                <h2 id="kelembapan">{{ data.kelembapan }}</h2>
+                <h2 id="kelembapan">Tidak Tersedia</h2>
                 <p class="label">Waktu</p>
-                <p>{{ data.tanggal }}</p>
+                <p id="waktu">N/A</p>
             </div>
 
             <div class="image">
-                <img src="static/PlaceholderImage.png" alt="Tanaman Cabai">
+                <img id="displayImage" src="/static/PlaceholderImage.png" alt="Hasil Klasifikasi">
             </div>
+        </section>
+
+        <section class="upload-section">
+            <h2>Upload Gambar untuk Deteksi</h2>
+            <div class="upload-form">
+                <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp">
+                <button id="uploadBtn" onclick="uploadImage()">Analisis Gambar</button>
+            </div>
+            <div id="loading" class="loading" style="display:none;">
+                <p>Memproses gambar...</p>
+            </div>
+            <div id="error" class="error" style="display:none;"></div>
+        </section>
+
         </section>
     </div>
 
-    <!-- <script src="/static/script.js"></script> -->
+    <script src="/static/style.js"></script>
 </body>
 </html>

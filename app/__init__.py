@@ -47,26 +47,28 @@ def setup_logging():
     )
     
     logger = logging.getLogger(__name__)
-    logger.info("Logging setup completed")
+    logger.info("Setup logging selesai")
 
 @app.on_event("startup")
 async def startup_event():
     setup_logging()
     create_tables()
+    
     logger = logging.getLogger(__name__)
-    logger.info("Application started successfully")
+    logger.info("Aplikasi berhasil dijalankan")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     logger = logging.getLogger(__name__)
-    logger.info("Application shutting down")
+    logger.info("Aplikasi dimatikan")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     data = {
-        "status_bibit": "Sehat",
-        "kelembapan": "60%",
-        "tanggal": "2 November 2025",
+        "status_bibit": "Tidak Tersedia",
+        "kelembapan": "Tidak Tersedia",
+        "tanggal": "N/A",
         "api_docs": "/docs"
     }
     return templates.TemplateResponse("index.html", {"request": request, "data": data})
+
