@@ -4,8 +4,10 @@ import joblib
 import logging
 from typing import Dict, Tuple, Optional, Any
 import numpy as np
+from ..config import get_config
 
 logger = logging.getLogger(__name__)
+config = get_config()
 
 
 class MLPredictionService:
@@ -21,7 +23,7 @@ class MLPredictionService:
         if self._initialized:
             return
         
-        self.model_dir = os.getenv("MODEL_DIR", "models")
+        self.model_dir = config.model_dir
         self.rf_model = None
         self.scaler = None
         self.feature_info = None

@@ -68,14 +68,3 @@ class ClassificationResultsResponse(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
-
-class ConfigResponse(BaseModel):
-    classification_polling_hours: int = Field(...)
-    classification_polling_minutes: int = Field(...)
-    api_key: str = Field(...)
-    api_base_url: str = Field(...)
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }

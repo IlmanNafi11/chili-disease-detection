@@ -1,33 +1,22 @@
+// Configuration will be loaded from window.APP_CONFIG (injected by backend)
 let API_KEY = '';
 let API_BASE_URL = '/api/v1';
-const HUMIDITY_POLLING_INTERVAL_MS = 3000;
+let HUMIDITY_POLLING_INTERVAL_MS = 3000;
+let CLASSIFICATION_POLLING_HOUR = 15;
+let CLASSIFICATION_POLLING_MINUTE = 28;
 let humidityPollingTimer = null;
 let classificationPollingTimer = null;
-let classificationPollingHour = 16;
-let classificationPollingMinute = 25;
 
-async function loadConfig() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/config`);
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.classification_polling_hours !== undefined) {
-                classificationPollingHour = data.classification_polling_hours;
-            }
-            if (data.classification_polling_minutes !== undefined) {
-                classificationPollingMinute = data.classification_polling_minutes;
-            }
-            if (data.api_key) {
-                API_KEY = data.api_key;
-            }
-            if (data.api_base_url) {
-                API_BASE_URL = data.api_base_url;
-            }
-            console.log(`Jadwal polling klasifikasi: ${classificationPollingHour}:${classificationPollingMinute.toString().padStart(2, '0')}`);
-        }
-    } catch (error) {
-        console.error('Error saat memuat konfigurasi:', error);
+// Load configuration from window object
+function loadConfiguration() {
+    if (window.APP_CONFIG) {
+        API_KEY = window.APP_CONFIG.API_KEY || '';
+        API_BASE_URL = window.APP_CONFIG.API_BASE_URL || '/api/v1';
+        HUMIDITY_POLLING_INTERVAL_MS = window.APP_CONFIG.HUMIDITY_POLLING_INTERVAL_MS || 3000;
+        CLASSIFICATION_POLLING_HOUR = window.APP_CONFIG.CLASSIFICATION_POLLING_HOUR || 15;
+        CLASSIFICATION_POLLING_MINUTE = window.APP_CONFIG.CLASSIFICATION_POLLING_MINUTE || 28;
+    } else {
+        console.warn('⚠️ APP_CONFIG not found, using defaults');
     }
 }
 
@@ -52,9 +41,9 @@ function checkAndLoadClassification() {
     const currentSecond = now.getSeconds();
     
     const timeString = `${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`;
-    const targetTime = `${classificationPollingHour}:${classificationPollingMinute.toString().padStart(2, '0')}`;
+    const targetTime = `${CLASSIFICATION_POLLING_HOUR}:${CLASSIFICATION_POLLING_MINUTE.toString().padStart(2, '0')}`;
     
-    if (currentHour === classificationPollingHour && currentMinute === classificationPollingMinute) {
+    if (currentHour === CLASSIFICATION_POLLING_HOUR && currentMinute === CLASSIFICATION_POLLING_MINUTE) {
         if (lastCheckedMinute !== currentMinute) {
             console.log(`⏰ Waktu polling tercapai! Loading klasifikasi... (${timeString})`);
             loadLatestClassification();
@@ -96,11 +85,7 @@ function stopHumidityPolling() {
 
 async function loadHumidity() {
     try {
-        const response = await fetch(`${API_BASE_URL}/kelembapan`, {
-            headers: {
-                'X-API-Key': API_KEY
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/kelembapan`);
         
         const data = await response.json();
         
@@ -223,11 +208,7 @@ function updateDisplay(data) {
 
 async function loadLatestClassification() {
     try {
-        const response = await fetch(`${API_BASE_URL}/hasil-klasifikasi?limit=1`, {
-            headers: {
-                'X-API-Key': API_KEY
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/hasil-klasifikasi?limit=1`);
         
         if (response.ok) {
             const data = await response.json();
@@ -261,11 +242,10 @@ function setDefaultDisplay() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadConfig().then(() => {
-        loadLatestClassification();
-        startHumidityPolling();
-        startClassificationScheduler();
-    });
+    loadConfiguration();
+    loadLatestClassification();
+    startHumidityPolling();
+    startClassificationScheduler();
     
     const fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('change', function() {

@@ -2,19 +2,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+from .config import get_config
 
-class DatabaseSettings:
-    database_url: str = os.getenv("DATABASE_URL", "mysql+pymysql://root:admin@localhost:3306/smartchili")
-
-settings = DatabaseSettings()
-
+config = get_config()
 
 engine = create_engine(
-    settings.database_url,
+    config.database_url,
     pool_pre_ping=True,
     pool_recycle=300,
     echo=False

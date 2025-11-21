@@ -6,8 +6,16 @@ from sqlalchemy import pool
 from alembic import context
 import sys
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 config = context.config
+
+# Override sqlalchemy.url with value from environment variable
+database_url = os.getenv("DATABASE_URL", "mysql+pymysql://root:admin@localhost:3306/smartchili")
+config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

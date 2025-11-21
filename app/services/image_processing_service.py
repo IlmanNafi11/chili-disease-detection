@@ -11,15 +11,17 @@ from ..utils.image_utils import (
     generate_filename,
     ensure_directory_exists
 )
+from ..config import get_config
 
 logger = logging.getLogger(__name__)
+config = get_config()
 
 
 class ImageProcessingService:
     
     def __init__(self):
-        self.upload_dir = os.getenv("UPLOAD_DIR", "static/uploads")
-        self.result_dir = os.getenv("RESULT_DIR", "static/result")
+        self.upload_dir = config.upload_dir
+        self.result_dir = config.result_dir
         
         ensure_directory_exists(self.upload_dir)
         ensure_directory_exists(self.result_dir)

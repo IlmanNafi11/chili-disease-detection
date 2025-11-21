@@ -11,25 +11,26 @@ from ...database import get_db
 from ...models.models import Classification
 from ...schemas.classification_schemas import (
     HealthResponse, UploadResponse, HumidityDataRequest, HumidityResponse,
-    ClassificationResultsResponse, ClassificationResult, ConfigResponse
+    ClassificationResultsResponse, ClassificationResult
 )
 from ...services.classification_service import create_classification_service
 from ...services.humidity_service import create_humidity_service
 from ...services.image_processing_service import create_image_processing_service
 from ...services.ml_prediction_service import create_ml_prediction_service
 from ...utils.image_utils import generate_filename
+from ...config import get_config
 
 logger = logging.getLogger(__name__)
+config = get_config()
 
 router = APIRouter(prefix="/api/v1", tags=["API"])
 
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    expected_api_key = os.getenv("API_KEY")
-    if not expected_api_key:
+    if not config.api_key:
         logger.warning("API_KEY tidak dikonfigurasi di environment")
         return
     
-    if not x_api_key or x_api_key != expected_api_key:
+    if not x_api_key or x_api_key != config.api_key:
         logger.warning(f"Percobaan API key tidak valid: {x_api_key}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -44,7 +45,7 @@ def validate_image_file(file: UploadFile):
             detail="File gambar diperlukan",
         )
     
-    if file.size and file.size > int(os.getenv("MAX_FILE_SIZE", 10485760)):
+    if file.size and file.size > config.max_file_size:
         raise HTTPException(
             status_code=status.HTTP_413_PAYLOAD_TOO_LARGE,
             detail="File terlalu besar. Maksimal 10MB",
@@ -75,7 +76,6 @@ def validate_image_file(file: UploadFile):
 @router.get(
     "/health",
     response_model=HealthResponse,
-    dependencies=[Depends(verify_api_key)],
     summary="Periksa kesehatan sistem",
     description="Endpoint untuk memverifikasi bahwa sistem sedang berjalan dan dapat menangani request"
 )
@@ -98,7 +98,7 @@ async def health_check():
             status=status_info,
             message=message,
             timestamp=datetime.utcnow(),
-            version=os.getenv("APP_VERSION", "1.0.0")
+            version=config.app_version
         )
     except Exception as e:
         logger.error(f"Health check failed: {e}")
@@ -106,7 +106,7 @@ async def health_check():
             status="tidak_sehat",
             message="Sistem mengalami masalah",
             timestamp=datetime.utcnow(),
-            version=os.getenv("APP_VERSION", "1.0.0")
+            version=config.app_version
         )
 
 @router.post(
@@ -126,13 +126,12 @@ async def upload_image(
     try:
         validate_image_file(file)
         
-        upload_dir = os.getenv("UPLOAD_DIR", "static/uploads")
-        os.makedirs(upload_dir, exist_ok=True)
+        os.makedirs(config.upload_dir, exist_ok=True)
         
         file_id = f"img_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
         file_ext = os.path.splitext(file.filename)[1]
         filename = f"{file_id}{file_ext}"
-        temp_upload_path = os.path.join(upload_dir, filename)
+        temp_upload_path = os.path.join(config.upload_dir, filename)
         
         logger.info(f"Menyimpan file upload: {filename}")
         with open(temp_upload_path, "wb") as buffer:
@@ -153,11 +152,10 @@ async def upload_image(
         klasifikasi_label = "sehat" if hasil == 0 else "sakit"
         logger.info(f"Hasil prediksi: {klasifikasi_label} (confidence: {confidence:.4f})")
         
-        result_dir = os.getenv("RESULT_DIR", "static/result")
-        os.makedirs(result_dir, exist_ok=True)
+        os.makedirs(config.result_dir, exist_ok=True)
         
         final_filename = generate_filename(klasifikasi_label, file_ext.lstrip('.'))
-        final_path = os.path.join(result_dir, final_filename)
+        final_path = os.path.join(config.result_dir, final_filename)
         
         logger.info("Step 3: Simpan gambar asli ke result directory")
         shutil.copy2(temp_upload_path, final_path)
@@ -240,7 +238,6 @@ async def submit_humidity_data(
 @router.get(
     "/kelembapan",
     response_model=HumidityResponse,
-    dependencies=[Depends(verify_api_key)],
     summary="Ambil data kelembapan terbaru",
     description="Endpoint untuk mengambil data kelembapan terbaru yang diterima dari ESP32"
 )
@@ -273,40 +270,8 @@ async def get_current_humidity(
         )
 
 @router.get(
-    "/config",
-    response_model=ConfigResponse,
-    summary="Ambil konfigurasi aplikasi",
-    description="Endpoint untuk mengambil konfigurasi aplikasi seperti jam polling klasifikasi dan API credentials"
-)
-async def get_config(
-    request: Request
-):
-    try:
-        polling_hours = int(os.getenv("CLASSIFICATION_POLLING_HOURS", "16"))
-        polling_minutes = int(os.getenv("CLASSIFICATION_POLLING_MINUTES", "25"))
-        api_key = os.getenv("API_KEY", "")
-        api_base_url = os.getenv("API_BASE_URL", "/api/v1")
-        
-        logger.info(f"Konfigurasi jam polling klasifikasi: {polling_hours}:{polling_minutes:02d}")
-        
-        return ConfigResponse(
-            classification_polling_hours=polling_hours,
-            classification_polling_minutes=polling_minutes,
-            api_key=api_key,
-            api_base_url=api_base_url
-        )
-        
-    except Exception as e:
-        logger.error(f"Error mengambil konfigurasi: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Kesalahan server saat mengambil konfigurasi"
-        )
-
-@router.get(
     "/hasil-klasifikasi",
     response_model=ClassificationResultsResponse,
-    dependencies=[Depends(verify_api_key)],
     summary="Mengambil data hasil klasifikasi",
     description="Endpoint untuk mengambil hasil klasifikasi penyakit tanaman cabai"
 )

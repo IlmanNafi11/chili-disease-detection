@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: API Sistem Deteksi Penyakit Tanaman Cabai
+  title: Agro Chili Sense API Specification
   description: |
     API untuk sistem deteksi penyakit tanaman cabai menggunakan machine learning dan monitoring kelembapan tanah dengan IoT.
     API ini menyediakan layanan untuk:
@@ -17,10 +17,10 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:8000
-    description: Server Development
-  - url: https://api.chili-detection.com
-    description: Server Production
+  - url: http://localhost:8000/api/v1
+    description: Server Development (configure via BASE_URL_DEVELOPMENT in .env)
+  - url: https://api.chili-detection.com/api/v1
+    description: Server Production (configure via BASE_URL_PRODUCTION in .env)
 
 security:
   - ApiKeyAuth: []
@@ -34,7 +34,9 @@ paths:
       description: |
         Endpoint untuk memverifikasi bahwa sistem sedang berjalan dan dapat menangani request.
         Mengembalikan status kesehatan sistem dan informasi dasar.
+        Endpoint ini tidak memerlukan autentikasi.
       operationId: healthCheck
+      security: []
       responses:
         '200':
           description: Sistem sehat dan siap menerima request
@@ -190,37 +192,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /config:
-    get:
-      tags:
-        - Configuration
-      summary: Mengambil konfigurasi aplikasi
-      description: |
-        Endpoint untuk mengambil konfigurasi aplikasi termasuk jadwal polling klasifikasi dan API credentials.
-        Endpoint ini tidak memerlukan autentikasi karena digunakan untuk inisialisasi frontend.
-      operationId: getConfig
-      responses:
-        '200':
-          description: Berhasil mengambil konfigurasi aplikasi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConfigResponse'
-              examples:
-                success:
-                  summary: Konfigurasi berhasil dimuat
-                  value:
-                    classification_polling_hours: 15
-                    classification_polling_minutes: 28
-                    api_key: "smartchili-api-key-2025"
-                    api_base_url: "/api/v1"
-        '500':
-          description: Kesalahan server saat mengambil konfigurasi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /kelembapan:
     get:
       tags:
@@ -230,7 +201,9 @@ paths:
         Endpoint untuk mengambil data kelembapan terbaru yang tersimpan di memory.
         Digunakan oleh frontend untuk polling data kelembapan setiap 3 detik.
         Jika data tidak tersedia, akan mengembalikan nilai -1.
+        Endpoint ini tidak memerlukan autentikasi.
       operationId: getCurrentHumidity
+      security: []
       responses:
         '200':
           description: Berhasil mengambil data kelembapan
@@ -267,7 +240,9 @@ paths:
         Endpoint untuk mengambil hasil klasifikasi penyakit tanaman cabai.
         Mengembalikan status kesehatan (0 = sehat, 1 = sakit) dan path/URL gambar yang dianalisis.
         Dapat difilter berdasarkan id atau mengambil hasil terbaru.
+        Endpoint ini tidak memerlukan autentikasi.
       operationId: getClassificationResults
+      security: []
       parameters:
         - name: id
           in: query
@@ -474,36 +449,6 @@ components:
         kelembapan: 65
         timestamp: "2025-11-20T07:13:30.180Z"
 
-    ConfigResponse:
-      type: object
-      properties:
-        classification_polling_hours:
-          type: integer
-          description: Jam untuk polling klasifikasi (0-23)
-          example: 15
-        classification_polling_minutes:
-          type: integer
-          description: Menit untuk polling klasifikasi (0-59)
-          example: 28
-        api_key:
-          type: string
-          description: API key untuk autentikasi
-          example: "smartchili-api-key-2025"
-        api_base_url:
-          type: string
-          description: Base URL untuk API endpoints
-          example: "/api/v1"
-      required:
-        - classification_polling_hours
-        - classification_polling_minutes
-        - api_key
-        - api_base_url
-      example:
-        classification_polling_hours: 15
-        classification_polling_minutes: 28
-        api_key: "smartchili-api-key-2025"
-        api_base_url: "/api/v1"
-
     ClassificationResult:
       type: object
       properties:
@@ -602,10 +547,8 @@ tags:
   - name: System
     description: Endpoint untuk monitoring dan kesehatan sistem
   - name: Image Processing
-    description: Endpoint untuk обработки gambar dan klasifikasi
+    description: Endpoint untuk pemrosesan gambar dan klasifikasi
   - name: Sensor Data
     description: Endpoint untuk data dari sensor IoT
   - name: Classification Results
     description: Endpoint untuk mengambil hasil klasifikasi
-  - name: Configuration
-    description: Endpoint untuk konfigurasi aplikasi
