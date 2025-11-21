@@ -1,14 +1,16 @@
 body {
     margin: 0;
     font-family: 'Merriweather', serif;
-    background-color: #020A06;
-    color: #ffffff;
+    background-color: #020A06 !important;
+    color: #ffffff !important;
+    min-height: 100vh;
 }
 
 .container {
     max-width: 1200px;
     margin: 50px auto;
     padding: 20px;
+    background-color: #020A06 !important;
 }
 
 header {
@@ -20,20 +22,20 @@ h1 {
     font-size: 2em;
     font-weight: 600;
     margin-bottom: 10px;
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .subtext {
     font-size: 0.95em;
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #020A06;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: #020A06 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
@@ -46,21 +48,29 @@ h1 {
 }
 
 .info .label {
-    color: #ffffff;
+    color: #ffffff !important;
     font-size: 0.9em;
 }
 
 .info h2 {
     margin: 5px 0 20px;
-    color: #ffffff;
+    color: #ffffff !important;
+}
+
+#status.status-sehat {
+    color: #22C55E !important;
+}
+
+#status.status-sakit {
+    color: #CE2B1A !important;
 }
 
 .info p {
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 #waktu {
-    color: #ffffff;
+    color: #ffffff !important;
     font-size: 1em;
     margin: 5px 0 20px;
 }
@@ -77,8 +87,8 @@ h1 {
 }
 
 .upload-section {
-    background-color: #020A06;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: #020A06 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 15px;
     padding: 30px;
     margin-bottom: 30px;
@@ -88,7 +98,7 @@ h1 {
 .upload-section h2 {
     margin-top: 0;
     margin-bottom: 20px;
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .upload-form {
@@ -104,14 +114,14 @@ h1 {
     background-color: #1a2520;
     border: 2px solid #2a3530;
     border-radius: 8px;
-    color: #ffffff;
+    color: #ffffff !important;
     cursor: pointer;
 }
 
 #fileInput::file-selector-button {
     padding: 8px 16px;
     background-color: #2ecc71;
-    color: #ffffff;
+    color: #ffffff !important;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -125,7 +135,7 @@ h1 {
 #uploadBtn {
     padding: 12px 30px;
     background-color: #3498db;
-    color: #ffffff;
+    color: #ffffff !important;
     border: none;
     border-radius: 8px;
     font-size: 1em;
@@ -145,33 +155,73 @@ h1 {
 .loading {
     text-align: center;
     padding: 20px;
-    color: #3498db;
+    color: #ffffff !important;
     font-weight: bold;
 }
 
 .status-sehat {
-    color: #22C55E;
+    color: #22C55E !important;
     font-weight: bold;
-    text-decoration: underline;
+    text-decoration: underline !important;
 }
 
 .status-sakit {
-    color: #CE2B1A;
+    color: #CE2B1A !important;
     font-weight: bold;
-    text-decoration: underline;
+    text-decoration: underline !important;
 }
 
 .error {
     background-color: #c0392b;
-    color: #ffffff;
+    color: #ffffff !important;
     padding: 15px;
     border-radius: 8px;
     margin-top: 15px;
 }
 
+/* Specific overrides for important elements */
+h1, h2, h3, h4, h5, h6, p, span, div, label {
+    color: #ffffff !important;
+}
+
+.loading p {
+    color: #ffffff !important;
+}
+
+.content, .upload-section {
+    background-color: #020A06 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+html {
+    background-color: #020A06 !important;
+}
+
 @media (max-width: 768px) {
     .content {
         flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+    
+    .info {
+        text-align: left;
+        padding: 20px;
+        width: 100%;
+        flex: none;
+    }
+    
+    .image {
+        width: 100%;
+        padding: 0;
+        flex: none;
+    }
+    
+    .image img {
+        width: 100%;
+        height: auto;
+        max-height: none;
+        object-fit: fill;
     }
     
     .upload-form {
