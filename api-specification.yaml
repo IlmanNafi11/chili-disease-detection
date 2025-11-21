@@ -190,6 +190,74 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /config:
+    get:
+      tags:
+        - Configuration
+      summary: Mengambil konfigurasi aplikasi
+      description: |
+        Endpoint untuk mengambil konfigurasi aplikasi termasuk jadwal polling klasifikasi dan API credentials.
+        Endpoint ini tidak memerlukan autentikasi karena digunakan untuk inisialisasi frontend.
+      operationId: getConfig
+      responses:
+        '200':
+          description: Berhasil mengambil konfigurasi aplikasi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+              examples:
+                success:
+                  summary: Konfigurasi berhasil dimuat
+                  value:
+                    classification_polling_hours: 15
+                    classification_polling_minutes: 28
+                    api_key: "smartchili-api-key-2025"
+                    api_base_url: "/api/v1"
+        '500':
+          description: Kesalahan server saat mengambil konfigurasi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /kelembapan:
+    get:
+      tags:
+        - Sensor Data
+      summary: Mengambil data kelembapan terbaru
+      description: |
+        Endpoint untuk mengambil data kelembapan terbaru yang tersimpan di memory.
+        Digunakan oleh frontend untuk polling data kelembapan setiap 3 detik.
+        Jika data tidak tersedia, akan mengembalikan nilai -1.
+      operationId: getCurrentHumidity
+      responses:
+        '200':
+          description: Berhasil mengambil data kelembapan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumidityResponse'
+              examples:
+                available:
+                  summary: Data tersedia
+                  value:
+                    success: true
+                    kelembapan: 65.5
+                    timestamp: "2025-11-20T07:13:30.180Z"
+                not_available:
+                  summary: Data tidak tersedia
+                  value:
+                    success: false
+                    kelembapan: -1.0
+                    timestamp: "2025-11-20T07:13:30.180Z"
+        '500':
+          description: Kesalahan server saat mengambil data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /hasil-klasifikasi:
     get:
       tags:
@@ -337,6 +405,18 @@ components:
         id:
           type: string
           description: ID unik untuk gambar yang diunggah
+        hasil:
+          type: integer
+          enum: [0, 1]
+          description: Hasil klasifikasi (0 = sehat, 1 = sakit)
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confidence score dari prediksi
+        gambar_url:
+          type: string
+          description: URL gambar asli yang disimpan
         upload_time:
           type: string
           format: date-time
@@ -345,12 +425,18 @@ components:
         - success
         - message
         - id
+        - hasil
+        - confidence
+        - gambar_url
         - upload_time
       example:
         success: true
-        message: "Gambar berhasil diunggah dan sedang diproses"
-        id: "img_20251102071330_001"
-        upload_time: "2025-11-02T07:13:30.180Z"
+        message: "Gambar berhasil diklasifikasikan sebagai tanaman sehat"
+        id: "img_20251120071330_001"
+        hasil: 0
+        confidence: 0.95
+        gambar_url: "/static/result/sehat_20251120071330.jpg"
+        upload_time: "2025-11-20T07:13:30.180Z"
 
     HumidityDataRequest:
       type: object
@@ -372,28 +458,51 @@ components:
         success:
           type: boolean
           description: Status operasi pemrosesan data
-        message:
-          type: string
-          description: Pesan hasil pemrosesan
-        humidity_value:
+        kelembapan:
           type: number
-          description: Nilai kelembapan yang diproses
+          description: Nilai kelembapan yang diproses (-1.0 jika tidak tersedia)
         timestamp:
           type: string
           format: date-time
           description: Waktu data diproses
       required:
         - success
-        - message
-        - humidity_value
+        - kelembapan
         - timestamp
       example:
         success: true
-        message: "Kelembapan dalam kondisi optimal"
-        humidity_value: 65
-        timestamp: "2025-11-02T07:13:30.180Z"
+        kelembapan: 65
+        timestamp: "2025-11-20T07:13:30.180Z"
 
-    
+    ConfigResponse:
+      type: object
+      properties:
+        classification_polling_hours:
+          type: integer
+          description: Jam untuk polling klasifikasi (0-23)
+          example: 15
+        classification_polling_minutes:
+          type: integer
+          description: Menit untuk polling klasifikasi (0-59)
+          example: 28
+        api_key:
+          type: string
+          description: API key untuk autentikasi
+          example: "smartchili-api-key-2025"
+        api_base_url:
+          type: string
+          description: Base URL untuk API endpoints
+          example: "/api/v1"
+      required:
+        - classification_polling_hours
+        - classification_polling_minutes
+        - api_key
+        - api_base_url
+      example:
+        classification_polling_hours: 15
+        classification_polling_minutes: 28
+        api_key: "smartchili-api-key-2025"
+        api_base_url: "/api/v1"
 
     ClassificationResult:
       type: object
@@ -498,3 +607,5 @@ tags:
     description: Endpoint untuk data dari sensor IoT
   - name: Classification Results
     description: Endpoint untuk mengambil hasil klasifikasi
+  - name: Configuration
+    description: Endpoint untuk konfigurasi aplikasi

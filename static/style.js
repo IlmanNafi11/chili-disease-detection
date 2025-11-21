@@ -1,5 +1,5 @@
-const API_KEY = 'smartchili-api-key-2025';
-const API_BASE_URL = '/api/v1';
+let API_KEY = '';
+let API_BASE_URL = '/api/v1';
 const HUMIDITY_POLLING_INTERVAL_MS = 3000;
 let humidityPollingTimer = null;
 let classificationPollingTimer = null;
@@ -8,11 +8,7 @@ let classificationPollingMinute = 25;
 
 async function loadConfig() {
     try {
-        const response = await fetch(`${API_BASE_URL}/config`, {
-            headers: {
-                'X-API-Key': API_KEY
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/config`);
         
         if (response.ok) {
             const data = await response.json();
@@ -21,6 +17,12 @@ async function loadConfig() {
             }
             if (data.classification_polling_minutes !== undefined) {
                 classificationPollingMinute = data.classification_polling_minutes;
+            }
+            if (data.api_key) {
+                API_KEY = data.api_key;
+            }
+            if (data.api_base_url) {
+                API_BASE_URL = data.api_base_url;
             }
             console.log(`Jadwal polling klasifikasi: ${classificationPollingHour}:${classificationPollingMinute.toString().padStart(2, '0')}`);
         }

@@ -4,9 +4,6 @@ import joblib
 import logging
 from typing import Dict, Tuple, Optional, Any
 import numpy as np
-from dotenv import load_dotenv
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 

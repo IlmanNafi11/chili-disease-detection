@@ -1,9 +1,7 @@
 import os
 import logging
-import shutil
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple
 from datetime import datetime
-from dotenv import load_dotenv
 
 from ..utils.image_utils import (
     resize_single_image,
@@ -13,8 +11,6 @@ from ..utils.image_utils import (
     generate_filename,
     ensure_directory_exists
 )
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +26,7 @@ class ImageProcessingService:
     
     def process_image(
         self, 
-        input_path: str, 
-        klasifikasi: str
+        input_path: str
     ) -> Tuple[str, Dict[str, float]]:
         temp_files = []
         
@@ -60,18 +55,10 @@ class ImageProcessingService:
             logger.info("Step 4: Ekstrak fitur GLCM")
             features = extract_glcm_features_single(grayscale_path)
             
-            final_filename = generate_filename(klasifikasi, "png")
-            final_path = os.path.join(self.result_dir, final_filename)
-            
-            shutil.copy2(grayscale_path, final_path)
-            logger.info(f"Gambar hasil disimpan: {final_path}")
-            
             self._cleanup_temp_files(temp_files)
             
-            relative_path = f"/static/result/{final_filename}"
-            
-            logger.info(f"Pemrosesan gambar selesai: {relative_path}")
-            return relative_path, features
+            logger.info(f"Pemrosesan gambar selesai, fitur GLCM diekstrak")
+            return input_path, features
             
         except Exception as e:
             logger.error(f"Gagal memproses gambar: {e}")

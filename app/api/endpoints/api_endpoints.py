@@ -143,8 +143,7 @@ async def upload_image(
         image_service = create_image_processing_service()
         
         logger.info("Step 1: Proses gambar dengan pipeline")
-        temp_klasifikasi = "temp"
-        processed_path, features = image_service.process_image(temp_upload_path, temp_klasifikasi)
+        processed_path, features = image_service.process_image(temp_upload_path)
         
         logger.info(f"Fitur GLCM diekstrak: {features}")
         
@@ -154,22 +153,14 @@ async def upload_image(
         klasifikasi_label = "sehat" if hasil == 0 else "sakit"
         logger.info(f"Hasil prediksi: {klasifikasi_label} (confidence: {confidence:.4f})")
         
-        final_filename = generate_filename(klasifikasi_label, "png")
         result_dir = os.getenv("RESULT_DIR", "static/result")
+        os.makedirs(result_dir, exist_ok=True)
+        
+        final_filename = generate_filename(klasifikasi_label, file_ext.lstrip('.'))
         final_path = os.path.join(result_dir, final_filename)
         
-        logger.info("Step 3: Rename file hasil dengan klasifikasi yang benar")
-        if os.path.exists(processed_path.lstrip('/')):
-            actual_processed_path = processed_path.lstrip('/')
-        else:
-            actual_processed_path = processed_path
-        
-        if os.path.exists(actual_processed_path):
-            shutil.move(actual_processed_path, final_path)
-        else:
-            temp_processed = processed_path.replace("/static/result/", "static/result/")
-            if os.path.exists(temp_processed):
-                shutil.move(temp_processed, final_path)
+        logger.info("Step 3: Simpan gambar asli ke result directory")
+        shutil.copy2(temp_upload_path, final_path)
         
         final_relative_path = f"/static/result/{final_filename}"
         
@@ -284,9 +275,8 @@ async def get_current_humidity(
 @router.get(
     "/config",
     response_model=ConfigResponse,
-    dependencies=[Depends(verify_api_key)],
     summary="Ambil konfigurasi aplikasi",
-    description="Endpoint untuk mengambil konfigurasi aplikasi seperti jam polling klasifikasi"
+    description="Endpoint untuk mengambil konfigurasi aplikasi seperti jam polling klasifikasi dan API credentials"
 )
 async def get_config(
     request: Request
@@ -294,11 +284,16 @@ async def get_config(
     try:
         polling_hours = int(os.getenv("CLASSIFICATION_POLLING_HOURS", "16"))
         polling_minutes = int(os.getenv("CLASSIFICATION_POLLING_MINUTES", "25"))
+        api_key = os.getenv("API_KEY", "")
+        api_base_url = os.getenv("API_BASE_URL", "/api/v1")
+        
         logger.info(f"Konfigurasi jam polling klasifikasi: {polling_hours}:{polling_minutes:02d}")
         
         return ConfigResponse(
             classification_polling_hours=polling_hours,
-            classification_polling_minutes=polling_minutes
+            classification_polling_minutes=polling_minutes,
+            api_key=api_key,
+            api_base_url=api_base_url
         )
         
     except Exception as e:
