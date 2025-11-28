@@ -32,22 +32,11 @@
             </div>
         </section>
 
-        <section class="upload-section">
-            <h2>Upload Gambar untuk Deteksi</h2>
-            <div class="upload-form">
-                <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp">
-                <button id="uploadBtn" onclick="uploadImage()">Analisis Gambar</button>
-            </div>
-            <div id="loading" class="loading" style="display:none;">
-                <p>Memproses gambar...</p>
-            </div>
-            <div id="error" class="error" style="display:none;"></div>
-        </section>
+
     </div>
 
-    <script>
-        // Inject configuration from backend
-        window.APP_CONFIG = {{ config | tojson | safe }};
+    <script type="text/javascript">
+        window.APP_CONFIG = JSON.parse('{{ config | tojson | safe }}');
     </script>
     <script src="/static/style.js"></script>
 </body>

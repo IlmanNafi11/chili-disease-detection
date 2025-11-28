@@ -105,76 +105,9 @@ async function loadHumidity() {
     }
 }
 
-async function uploadImage() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        showError('Silakan pilih file gambar terlebih dahulu');
-        return;
-    }
-    
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-        showError('Format file tidak valid. Gunakan JPG, PNG, atau WEBP');
-        return;
-    }
-    
-    if (file.size > 10485760) {
-        showError('Ukuran file terlalu besar. Maksimal 10MB');
-        return;
-    }
-    
-    hideError();
-    showLoading();
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/upload-gambar`, {
-            method: 'POST',
-            headers: {
-                'X-API-Key': API_KEY
-            },
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.detail || 'Gagal mengunggah gambar');
-        }
-        
-        hideLoading();
-        updateDisplay(data);
-        
-    } catch (error) {
-        hideLoading();
-        showError(`Error: ${error.message}`);
-        console.error('Error saat upload:', error);
-    }
-}
 
-function showLoading() {
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('uploadBtn').disabled = true;
-}
 
-function hideLoading() {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('uploadBtn').disabled = false;
-}
 
-function showError(message) {
-    const errorDiv = document.getElementById('error');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-}
-
-function hideError() {
-    document.getElementById('error').style.display = 'none';
-}
 
 function updateDisplay(data) {
     const displayImage = document.getElementById('displayImage');
@@ -246,11 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLatestClassification();
     startHumidityPolling();
     startClassificationScheduler();
-    
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', function() {
-        hideError();
-    });
 });
 
 window.addEventListener('beforeunload', function() {
