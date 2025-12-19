@@ -1,0 +1,141 @@
+body {
+    margin: 0;
+    font-family: 'Merriweather', serif;
+    background-color: #020A06 !important;
+    color: #ffffff !important;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #020A06 !important;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+h1 {
+    font-size: 2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #ffffff !important;
+}
+
+.subtext {
+    font-size: 0.95em;
+    color: #ffffff !important;
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #020A06 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    margin-bottom: 30px;
+}
+
+.info {
+    flex: 1;
+    padding: 40px;
+}
+
+.info .label {
+    color: #ffffff !important;
+    font-size: 0.9em;
+}
+
+.info h2 {
+    margin: 5px 0 20px;
+    color: #ffffff !important;
+}
+
+#status.status-sehat {
+    color: #22C55E !important;
+}
+
+#status.status-sakit {
+    color: #CE2B1A !important;
+}
+
+.info p {
+    color: #ffffff !important;
+}
+
+#waktu {
+    color: #ffffff !important;
+    font-size: 1em;
+    margin: 5px 0 20px;
+}
+
+.image {
+    flex: 1;
+}
+
+.image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    max-height: 400px;
+}
+
+.status-sehat {
+    color: #22C55E !important;
+    font-weight: bold;
+    text-decoration: underline !important;
+}
+
+.status-sakit {
+    color: #CE2B1A !important;
+    font-weight: bold;
+    text-decoration: underline !important;
+}
+
+/* Specific overrides for important elements */
+h1, h2, h3, h4, h5, h6, p, span, div, label {
+    color: #ffffff !important;
+}
+
+.content {
+    background-color: #020A06 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+html {
+    background-color: #020A06 !important;
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+    
+    .info {
+        text-align: left;
+        padding: 20px;
+        width: 100%;
+        flex: none;
+    }
+    
+    .image {
+        width: 100%;
+        padding: 0;
+        flex: none;
+    }
+    
+    .image img {
+        width: 100%;
+        height: auto;
+        max-height: none;
+        object-fit: fill;
+    }
+}

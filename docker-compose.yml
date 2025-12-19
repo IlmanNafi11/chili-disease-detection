@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: chili-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smartchili
+      MYSQL_USER: chili_user
+      MYSQL_PASSWORD: chili_password
+      TZ: 'Asia/Jakarta'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - chili-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chili-api
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: mysql+pymysql://chili_user:chili_password@mysql:3306/smartchili
+      BASE_URL_DEVELOPMENT: http://0.0.0.0:8000
+      BASE_URL_PRODUCTION: http://0.0.0.0:8000
+      API_KEY: your-api-key-here
+      MAX_FILE_SIZE: 10485760
+      UPLOAD_DIR: static/uploads
+      RESULT_DIR: static/result
+      MODEL_DIR: maching-learning
+      LOG_LEVEL: INFO
+      TIMEZONE: Asia/Jakarta
+      CLASSIFICATION_POLLING_HOURS: 15
+      CLASSIFICATION_POLLING_MINUTES: 28
+      HUMIDITY_POLLING_INTERVAL_MS: 3000
+      CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./static:/app/static
+      - ./maching-learning:/app/models
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - chili-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  chili-network:
+    driver: bridge

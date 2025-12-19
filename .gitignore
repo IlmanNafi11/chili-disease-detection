@@ -1,2 +1,17 @@
 .env
 __pycache__
+models
+.vscode
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+static/uploads/
+static/result/
+app.log
+*.log

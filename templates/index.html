@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agro Chili Sense</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem Deteksi Penyakit Pada Tanaman Cabai</h1>
+            <p class="subtext">
+                Menerapkan Algoritma Machine Learning untuk deteksi penyakit tanaman cabai, 
+                dan penerapan Internet of Things (IoT) untuk monitoring kelembapan tanah.
+            </p>
+        </header>
+
+        <section class="content">
+            <div class="info">
+                <p class="label">Status Bibit</p>
+                <h2 id="status">Tidak Tersedia</h2>
+                <p class="label">Status Kelembapan</p>
+                <h2 id="kelembapan">Tidak Tersedia</h2>
+                <p class="label">Waktu</p>
+                <p id="waktu">N/A</p>
+            </div>
+
+            <div class="image">
+                <img id="displayImage" src="/static/PlaceholderImage.png" alt="Hasil Klasifikasi">
+            </div>
+        </section>
+
+
+    </div>
+
+    <script type="text/javascript">
+        window.APP_CONFIG = JSON.parse('{{ config | tojson | safe }}');
+    </script>
+    <script src="/static/style.js"></script>
+</body>
+</html>
